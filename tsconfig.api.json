@@ -1,0 +1,21 @@
+// TSConfig for Vercel serverless/edge functions in the `api/` directory.
+// Edge functions use web-standard globals (Request, Response, fetch) plus
+// `process.env`, all of which @types/node provides.
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": ["api/**/*"],
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+
+    // Include Node.js types and avoid accidentally including other `@types/*` packages.
+    "types": ["node"],
+
+    // Disable emitting output during `vue-tsc --build`, which is used for type-checking only.
+    "noEmit": true,
+
+    // `vue-tsc --build` produces a .tsbuildinfo file for incremental type-checking.
+    // Specified here to keep it out of the root directory.
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.api.tsbuildinfo"
+  }
+}
