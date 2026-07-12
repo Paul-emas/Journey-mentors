@@ -59,7 +59,7 @@ export interface City {
   latitude: number | null
   longitude: number | null
   time_zone: string | null
-  airports?: Airport[]
+  airports?: Airport[] | null
 }
 
 export interface Airport {
@@ -78,6 +78,31 @@ export interface Airport {
 }
 
 export type Place = Airport | City
+
+export interface PlaceSuggestion {
+  iataCode: string
+  name: string
+  cityName: string | null
+}
+
+export interface ApiWarning {
+  type: string
+  title: string
+  code: string
+  message: string
+}
+
+export interface ListMeta {
+  limit: number
+  before: string | null
+  after: string | null
+}
+
+export interface PlaceSuggestionsResponse {
+  data: Place[]
+  meta: ListMeta | null
+  warnings: ApiWarning[]
+}
 
 export type FlightCondition = {
   allowed: boolean
@@ -161,7 +186,6 @@ export interface Segment {
   destination: Airport
   origin_terminal: string | null
   destination_terminal: string | null
-  // Local datetime without offset, in the origin/destination airport's time zone
   departing_at: string
   arriving_at: string
   duration: string | null
@@ -269,7 +293,6 @@ export interface Offer {
   base_currency: string
   tax_amount: string | null
   tax_currency: string | null
-  // Totals once intended_services are included
   intended_total_amount: string
   intended_base_amount: string
   intended_services: IntendedService[] | null
@@ -283,7 +306,6 @@ export interface Offer {
   available_airline_credit_ids: string[]
 }
 
-// The search criteria echoed back on the offer request, not an offer slice
 export interface OfferRequestSlice {
   origin: Place
   destination: Place
@@ -299,7 +321,6 @@ export interface OfferRequest {
   live_mode: boolean
   created_at: string
   cabin_class?: CabinClass | null
-  // Token for initializing Duffel UI components with this search
   client_key?: string
   slices: OfferRequestSlice[]
   passengers: OfferRequestPassenger[]
@@ -311,9 +332,6 @@ export interface OfferRequestResponse {
   data: OfferRequest
 }
 
-// Minimal shapes accepted by Duffel when *creating* an offer request.
-// Unlike OfferRequestSlice/OfferRequestPassenger (which echo back full
-// place/passenger objects), the create payload only needs IATA codes and type.
 export interface CreateOfferRequestSlice {
   origin: string
   destination: string
@@ -328,4 +346,42 @@ export interface CreateOfferRequestPayload {
   slices: CreateOfferRequestSlice[]
   passengers: CreateOfferRequestPassenger[]
   cabin_class?: CabinClass
+}
+
+export interface FlightSearchPassengers {
+  adults: number
+  children: number
+  infants: number
+}
+
+export interface FlightSearchParams {
+  origin: string
+  destination: string
+  departureDate: string
+  returnDate?: string | null
+  cabinClass?: CabinClass
+  passengers: FlightSearchPassengers
+}
+
+export interface FlightSegment {
+  origin: string
+  destination: string
+  departingAt: string
+  arrivingAt: string
+  airlineName: string
+  flightNumber: string
+  durationMin: number
+}
+
+export interface FlightOffer {
+  id: string
+  airlineName: string
+  airlineCode: string | null
+  price: number
+  currency: string
+  segments: FlightSegment[]
+  stops: number
+  departingAt: string
+  arrivingAt: string
+  totalDurationMin: number
 }

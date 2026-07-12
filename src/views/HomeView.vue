@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { useFlightSearch } from '@/composables/useFlightSearch.ts';
+// import { usePlaceSuggestions } from '@/composables/usePlaceSuggestions';
 import TheWelcome from '../components/TheWelcome.vue'
 
 const { search } = useFlightSearch()
+
+// const { query, suggestions, isLoading, clear } = usePlaceSuggestions()
 
 onMounted(() => {
   search({
@@ -22,6 +25,7 @@ onMounted(() => {
 
 <template>
   <main>
+
     <TheWelcome />
   </main>
 </template>
