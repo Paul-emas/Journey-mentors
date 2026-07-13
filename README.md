@@ -113,7 +113,7 @@ Exposed refs are wrapped in `readonly()` so only the composable can mutate them 
 
 ### Async handling
 
-The assignment evaluates async mechanics directly, so I implemented them by hand rather than reaching for a data-fetching library:
+I implemented them by hand rather than reaching for a data-fetching library:
 
 - **Race conditions:** each search aborts the previous in-flight request via `AbortController`; an aborted request is discarded and never writes to state (`if (signal.aborted) return`), so a slow older response can't overwrite a newer one.
 - **Explicit states:** the UI renders distinct loading, success, empty (valid search, no results), and error states rather than a single loading boolean.
@@ -133,13 +133,9 @@ Search criteria are serialised into the URL query string (`useSearchUrlSync`, vi
 
 ## What I skipped, and why
 
-Scope was deliberately kept tight — a finished slice over a broad, half-built one.
-
 - **Airline filter** (bonus) — skipped to keep the filter set focused on the required stops + price. It would be a straightforward addition to the existing `computed` filter chain.
 - **Sort/filter by departure time** (bonus) — skipped for the same reason; the sort is a strategy map, so it's a small addition.
-- **Return-trip handling** — the form supports a return date and the request builds a second slice, but the results UI is optimised for the outbound slice.
-
-**Debounced airport autocomplete** (a listed bonus) _is_ implemented, backed by the place-suggestions endpoint.
+  **Debounced airport autocomplete** (a listed bonus) _is_ implemented, backed by the place-suggestions endpoint.
 
 ---
 
