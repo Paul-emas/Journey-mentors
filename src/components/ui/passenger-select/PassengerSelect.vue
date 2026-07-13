@@ -86,7 +86,6 @@ function adjust(key: PassengerKey, delta: number) {
   if (!type) return
   const next = { ...model.value }
   next[key] = Math.min(type.max, Math.max(type.min, next[key] + delta))
-  // Each infant must sit on an adult's lap
   if (next.infants > next.adults) next.infants = next.adults
   model.value = next
 }

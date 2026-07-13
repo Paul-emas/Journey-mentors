@@ -22,6 +22,7 @@ type QueryStatus = 'idle' | 'pending' | 'success' | 'error'
 
 const status = ref<QueryStatus>('idle')
 const data = ref<FlightOffer[] | null>(null)
+const offers = ref<DuffelOffer[] | null>(null)
 const error = ref<string | null>(null)
 const lastParams = ref<FlightSearchParams | null>(null)
 
@@ -44,7 +45,9 @@ export function useFlightSearch() {
     error.value = null
 
     try {
-      data.value = await fetchOffers(params, signal)
+      const result = await fetchOffers(params, signal)
+      offers.value = result.offers
+      data.value = result.data
       status.value = 'success'
     } catch (err) {
       if (signal.aborted) return
@@ -59,6 +62,7 @@ export function useFlightSearch() {
 
   return {
     data: readonly(data),
+    offers: readonly(offers),
     error: readonly(error),
     status: readonly(status),
     isPending,
@@ -73,7 +77,7 @@ export function useFlightSearch() {
 async function fetchOffers(
   params: FlightSearchParams,
   signal: AbortSignal,
-): Promise<FlightOffer[]> {
+): Promise<{ data: FlightOffer[]; offers: DuffelOffer[] }> {
   const payload: CreateOfferRequestPayload = {
     slices: buildSlices(params),
     passengers: buildPassengers(params.passengers),
@@ -83,7 +87,10 @@ async function fetchOffers(
   try {
     const response = await createOfferRequest(payload, { signal })
     const offers: DuffelOffer[] = response._data?.data?.offers ?? []
-    return offers.map(mapOffer)
+    return {
+      offers,
+      data: offers.map(mapOffer),
+    }
   } catch (err) {
     if (err instanceof FetchError) {
       throw new Error(err.data?.errors?.[0]?.message ?? `Flight search failed (${err.status})`)

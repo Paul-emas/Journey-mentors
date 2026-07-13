@@ -192,7 +192,7 @@ export interface Segment {
   departing_at: string
   arriving_at: string
   duration: string | null
-  distance: string | null // kilometers
+  distance: string | null
   aircraft: Aircraft | null
   marketing_carrier: Airline
   marketing_carrier_flight_number: string

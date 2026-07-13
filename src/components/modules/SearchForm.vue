@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, unref, watch } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref, unref, watch } from 'vue'
 import dayjs from 'dayjs'
 import { useVuelidate } from '@vuelidate/core'
 import { helpers, required } from '@vuelidate/validators'
@@ -12,6 +12,9 @@ import DaysStrip from '@/components/modules/DaysStrip.vue'
 import PlaceSuggestionItem from '@/components/modules/PlaceSuggestionItem.vue'
 import { useFlightSearch } from '@/composables/useFlightSearch'
 import { usePlaceSuggestions } from '@/composables/usePlaceSuggestions'
+import { useSearchUrlSync } from '@/composables/useSearchUrlSync'
+import { useFlightAPI } from '@/network'
+import { hasIataCode, toPlaceSuggestion } from '@/utils/flight'
 import type { FlightSearchParams } from '@/composables/useFlightSearch'
 import type { CabinClass, PlaceSuggestion } from '@/types'
 import {
@@ -121,11 +124,11 @@ watch(
   },
 )
 
-async function onSubmit() {
-  const valid = await v$.value.$validate()
-  if (!valid) return
+const lastSearch = ref<FlightSearchParams | null>(null)
+const { readFromUrl } = useSearchUrlSync(lastSearch)
 
-  const params: FlightSearchParams = {
+function buildParams(): FlightSearchParams {
+  return {
     origin: form.origin,
     destination: form.destination,
     departureDate: form.departureDate,
@@ -133,9 +136,75 @@ async function onSubmit() {
     cabinClass: form.cabinClass || undefined,
     passengers: { ...form.passengers },
   }
+}
 
+function runSearch(params: FlightSearchParams) {
+  lastSearch.value = params
   search(params)
 }
+
+async function onSubmit() {
+  const valid = await v$.value.$validate()
+  if (!valid) return
+
+  runSearch(buildParams())
+}
+
+async function onDayStripChange() {
+  await nextTick()
+  if (v$.value.$invalid) return
+
+  runSearch(buildParams())
+}
+
+function placeFromCode(iataCode: string): PlaceSuggestion {
+  return {
+    iataCode,
+    name: iataCode,
+    cityName: null,
+    type: 'airport',
+    countryName: null,
+    label: iataCode,
+  }
+}
+
+const { getPlaceSuggestions } = useFlightAPI()
+
+async function resolvePlace(iataCode: string): Promise<PlaceSuggestion> {
+  try {
+    const response = await getPlaceSuggestions(iataCode)
+    const match = (response._data?.data ?? [])
+      .filter(hasIataCode)
+      .map(toPlaceSuggestion)
+      .find((place) => place.iataCode === iataCode)
+
+    return match ?? placeFromCode(iataCode)
+  } catch {
+    return placeFromCode(iataCode)
+  }
+}
+
+onMounted(() => {
+  const params = readFromUrl()
+  if (!params) return
+
+  originPlace.value = placeFromCode(params.origin)
+  destinationPlace.value = placeFromCode(params.destination)
+  form.departureDate = params.departureDate
+  form.returnDate = params.returnDate ?? ''
+  form.isReturn = Boolean(params.returnDate)
+  form.cabinClass = params.cabinClass ?? 'economy'
+  form.passengers = { ...params.passengers }
+
+  runSearch(params)
+
+  resolvePlace(params.origin).then((place) => {
+    originPlace.value = place
+  })
+  resolvePlace(params.destination).then((place) => {
+    destinationPlace.value = place
+  })
+})
 </script>
 
 <template>
@@ -268,6 +337,6 @@ async function onSubmit() {
       </div>
     </div>
 
-    <DaysStrip v-model="form.departureDate" class="mt-1" />
+    <DaysStrip v-model="form.departureDate" class="mt-1" @update:model-value="onDayStripChange" />
   </form>
 </template>

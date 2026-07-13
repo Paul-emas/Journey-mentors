@@ -126,7 +126,7 @@ interface CalendarDay {
 
 const calendarDays = computed((): CalendarDay[] => {
   const firstOfMonth = dayjs().year(viewYear.value).month(viewMonth.value).date(1)
-  const startOfWeek = firstOfMonth.day() // 0 = Sunday
+  const startOfWeek = firstOfMonth.day()
   const daysInMonth = firstOfMonth.daysInMonth()
 
   const todayStr = dayjs().format('YYYY-MM-DD')
@@ -254,7 +254,6 @@ function clearDate(event: Event) {
         v-if="isOpen"
         class="absolute top-full left-0 z-50 mt-1.5 w-70 rounded-[14px] border border-[#e8ecef] bg-white p-4 shadow-[0_12px_32px_rgba(0,0,0,0.08),0_2px_6px_rgba(0,0,0,0.04)] select-none"
       >
-        <!-- Header: month nav -->
         <div class="mb-3.5 flex items-center justify-between">
           <button
             type="button"
@@ -278,7 +277,6 @@ function clearDate(event: Event) {
           </button>
         </div>
 
-        <!-- Weekday headers -->
         <div class="mb-1 grid grid-cols-7">
           <span
             v-for="wd in weekDays"
@@ -288,7 +286,6 @@ function clearDate(event: Event) {
           >
         </div>
 
-        <!-- Day grid -->
         <div class="grid grid-cols-7 gap-0.5">
           <button
             v-for="(day, idx) in calendarDays"
@@ -314,7 +311,6 @@ function clearDate(event: Event) {
           </button>
         </div>
 
-        <!-- Quick actions -->
         <div class="mt-2.5 flex justify-center border-t border-slate-100 pt-2.5">
           <button
             type="button"

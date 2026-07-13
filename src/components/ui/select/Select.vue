@@ -91,8 +91,6 @@ interface OptionEntry {
   index: number
 }
 
-// Flat index per option, following the rendered (grouped) order — drives
-// keyboard navigation and aria-activedescendant across group boundaries.
 const groupedEntries = computed<Record<string, OptionEntry[]> | null>(() => {
   const groups = groupedItems.value
   if (!groups) return null
@@ -158,7 +156,6 @@ function handleTypeahead(char: string) {
 
   const list = orderedItems.value
   const start = Math.max(highlightedIndex.value, 0)
-  // A single char steps to the next match; a longer buffer keeps matching in place
   const offset = typeaheadBuffer.length > 1 ? 0 : 1
   for (let i = 0; i < list.length; i++) {
     const index = (start + offset + i) % list.length
@@ -206,7 +203,6 @@ function onTriggerKeydown(event: KeyboardEvent) {
       break
     case 'Enter':
     case ' ': {
-      // Mid-typeahead, space is part of the query ("premium economy"), not a select
       if (event.key === ' ' && typeaheadBuffer) {
         event.preventDefault()
         handleTypeahead(event.key)

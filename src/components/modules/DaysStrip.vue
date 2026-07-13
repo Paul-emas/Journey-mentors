@@ -7,7 +7,7 @@ const selectedDate = defineModel<string>({ default: '' })
 
 const today = dayjs().format('YYYY-MM-DD')
 
-const DAYS_SHOWN = 8
+const DAYS_SHOWN = 10
 
 const stripOffset = ref(0)
 const direction = ref(1)
@@ -73,7 +73,7 @@ watch(selectedDate, (next, prev) => {
         :key="day.date"
         type="button"
         @click="selectDay(day.date)"
-        class="flex h-14 min-w-18 shrink-0 cursor-pointer flex-col items-center justify-center rounded-[10px] border-[1.5px] px-3.5 py-1.5 transition-all duration-200 md:min-w-21"
+        class="flex h-14 flex-1 cursor-pointer flex-col items-center justify-center rounded-[10px] border-[1.5px] px-2 py-1.5 transition-all duration-200"
         :class="
           selectedDate === day.date
             ? 'border-[#1a6b5a] bg-[#e6f5f1] shadow-[0_4px_12px_rgba(26,107,90,0.15)]'
